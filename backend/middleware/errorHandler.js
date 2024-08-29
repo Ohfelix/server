@@ -1,7 +1,7 @@
 const { logEvents } = require("./logger");
 
-const errorHandler = async (err, req, res, next) => {
-  await logEvents(
+const errorHandler = (err, req, res, next) => {
+  logEvents(
     `${err.name}: ${err.message}\t${req.method}\t${req.url}\t${req.headers.origin}`,
     "errLog.log"
   );
@@ -10,7 +10,7 @@ const errorHandler = async (err, req, res, next) => {
 
   const status = res.statusCode ? res.statusCode : 500;
 
-  res.status(status).json({ message: err.message });
+  res.json(status).json({ message: err.message, isError: true });
 };
 
 module.exports = errorHandler;

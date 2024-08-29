@@ -14,13 +14,15 @@ const getAllUsers = asyncHandler(async (req, res) => {
 const createNewUsers = asyncHandler(async (req, res) => {
   const { username, password, roles } = req.body;
 
-  if (!username || !password || !Array.isArray(roles) || !roles.length) {
+  if (!username || !password) {
     return res
       .status(400)
       .json({ message: "Please provide all required fields" });
   }
 
-  const duplicate = await User.findOne({ username }).lean().exec();
+  const duplicate = await User.findOne({ username })
+    .collatuin({ locale: "en", strenght: 2 })
+    .lean.exec();
 
   if (duplicate) {
     return res.status(409).json({ message: "Duplicate username" });
@@ -28,7 +30,10 @@ const createNewUsers = asyncHandler(async (req, res) => {
 
   const hashedPwd = await bcrypt.hash(password, 10);
 
-  const userObject = { username, password: hashedPwd, roles };
+  const userObject =
+    !Array.isArray(roles) || !roles.length //verificar parenteses entre esse argumento
+      ? { username, password: hashedPwd }
+      : { username, password: hashedPwd, roles };
 
   const user = await User.create(userObject);
   if (user) {
